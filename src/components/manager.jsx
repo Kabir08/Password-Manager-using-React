@@ -1,25 +1,43 @@
-import React, { useState } from 'react'
-import { useRef } from 'react'
+import React from 'react'
+import { useRef, useState, useEffect} from 'react';
 
 const Manager = () => {
     const ref = useRef()
-    const [form, setform] = useState({site: "", username: "", password: ""})
+    const passwordref = useRef()
+    const [form, setform] = useState({ site: "", username: "", password: "" })
+    const [passwordArray, setPasswordArray] = useState([])
 
-    const savePassword = () =>{
+    useEffect(() => {
+        let passwords = localStorage.getItem("passwords");
+        let passwordArray;
+        if (passwords) {
+            setPasswordArray(JSON.parse(passwords))
+        }
+    }, [])
+
+
+    const savePassword = () => {
+        setPasswordArray([...passwordArray, form])
+        localStorage.setItem("passwords", JSON.stringify([...passwordArray, form]))
 
     }
 
-    const showPassword = () =>{
-        if(ref.current.src.includes("./public/hide.svg")){
-            ref.current.src = "./public/show.svg"
+    const showPassword = () => {
+        passwordref.current.type = "text"
+        if (ref.current.src.includes("./public/hide.svg")) {
+            ref.current.src = "/show.svg"
+            passwordref.current.type = "password"
         }
-        ref.current.src = "./public/hide.svg"
+        else{
+            ref.current.src = "/hide.svg"
+            passwordref.current.type = "text"
+        }
     }
 
     const handlechange = (e) => {
-      
+        setform({ ...form, [e.target.name]: e.target.value })
     }
-    
+
 
     return (
         <>
@@ -38,7 +56,7 @@ const Manager = () => {
                         <input value={form.username} onChange={handlechange} placeholder='Enter Username' className='rounded-full border border-green-500 w-full p-4 py-1' type="text" name='username' id='' />
                         <div className="relative">
 
-                            <input value={form.password} onChange={handlechange} placeholder='Enter Password' className='rounded-full border border-green-500 w-full p-4 py-1' type="text" name='password' id='' />
+                            <input ref={passwordref} value={form.password} onChange={handlechange} placeholder='Enter Password' className='rounded-full border border-green-500 w-full p-4 py-1' type="password" name='password' id='' />
                             <span className="absolute right-2 cursor-pointer top-1.5 " onClick={showPassword}><img ref={ref} className=' w-[22px]' src="./public/show.svg" alt="eye" /></span>
                         </div>
                     </div>
@@ -49,6 +67,28 @@ const Manager = () => {
                         </lord-icon>
                         Add Password
                     </button>
+                </div>
+                <div className='passwords'>
+                    <h2 className='font-bold text-2xl py-4'>Your Passwords</h2>
+                    {passwordArray.length === 0 && <div> No Passwords to Show</div>}
+                    {passwordArray.length != 0 &&<table className="table-auto w-full rounded-md overflow-hidden">
+                        <thead className=' bg-green-800 text-white'>
+                            <tr>
+                                <th>Site</th>
+                                <th>Username</th>
+                                <th>Password</th>
+                            </tr>
+                        </thead>
+                        <tbody className='bg-green-100'>
+                            {passwordArray.map ((item, index)=>{ return <tr key={index}>
+                                <td className='pl-[120px] '><a href="{item.site} target = '_blank"></a>{item.site}</td>
+                                <td className='pl-[120px] '>{item.username}</td>
+                                <td className='pl-[120px] '>{item.password}</td>
+                            </tr>
+                            })}
+                            
+                        </tbody>
+                    </table>}
                 </div>
             </div>
         </>
